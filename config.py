@@ -16,6 +16,7 @@ class AudioConfig:
 
 @dataclass(frozen=True)
 class STTConfig:
+    api_key: str | None = None
     model: str | None = None
     base_url: str | None = None
     frame_ms: int = 20
@@ -51,6 +52,7 @@ def load_app_config() -> AppConfig:
     commit_key = os.getenv("V2WH_COMMIT_KEY", "")
     hid_enabled = os.getenv("V2WH_HID_ENABLED", "1") not in {"0", "false", "False"}
     device_index = int(os.getenv("V2WH_PYAUDIO_DEVICE_INDEX", "0"))
+    api_key = os.getenv("V2WH_SILICONFLOW_API_KEY") or os.getenv("V2WH_STT_API_KEY") or None
     model = os.getenv("V2WH_STT_MODEL") or None
     base_url = os.getenv("V2WH_STT_BASE_URL") or None
     dict_path = os.getenv("V2WH_WUBI_DICT", "wubi.json")
@@ -58,7 +60,7 @@ def load_app_config() -> AppConfig:
 
     return AppConfig(
         audio=AudioConfig(pyaudio_device_index=device_index),
-        stt=STTConfig(model=model, base_url=base_url),
+        stt=STTConfig(api_key=api_key, model=model, base_url=base_url),
         translate=TranslateConfig(
             dict_path=dict_path,
             corrections_path=corrections_path,
@@ -66,4 +68,3 @@ def load_app_config() -> AppConfig:
         ),
         hid=HIDConfig(enabled=hid_enabled),
     )
-
