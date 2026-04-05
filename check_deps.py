@@ -20,6 +20,10 @@ from importlib import util as importlib_util
 _KIND_RANK = {"optional": 0, "conditional": 1, "required": 2}
 _KIND_BY_RANK = {v: k for k, v in _KIND_RANK.items()}
 
+_MODULE_TO_DIST = {
+    "websocket": "websocket-client",
+}
+
 
 def _combine_kind(outer: str, inner: str) -> str:
     return _KIND_BY_RANK[min(_KIND_RANK[outer], _KIND_RANK[inner])]
@@ -286,7 +290,8 @@ def main(argv: list[str]) -> int:
             continue
         kind_rank = min(_KIND_RANK[h.kind] for h in mod_hits)
         kind = _KIND_BY_RANK[kind_rank]
-        declared = (mod.lower().replace("_", "-") in req_names_norm) or (mod.lower() in {n.lower() for n in req_names})
+        dist_name = _MODULE_TO_DIST.get(mod) or mod
+        declared = (dist_name.lower().replace("_", "-") in req_names_norm) or (dist_name.lower() in {n.lower() for n in req_names})
         examples = [_format_hit(h, root) for h in mod_hits[:8]]
         results.append((mod, kind, installed, declared, origin, examples))
 
@@ -323,14 +328,22 @@ def main(argv: list[str]) -> int:
         effective_missing = []
         for mod, kind, installed, _, _, _ in results:
             if not installed:
-                if kind == "optional" and not args.strict:
+                if kind in {"optional", "conditional"} and not args.strict:
                     continue
                 effective_missing.append(mod)
         if effective_missing:
             errors.append("源码中 import 的依赖缺失: " + ", ".join(sorted(set(effective_missing))))
 
     if undeclared_mods:
-        errors.append("源码中 import 的依赖未在 requirements.txt 声明: " + ", ".join(sorted(set(undeclared_mods))))
+        effective_undeclared = []
+        by_mod_kind = {mod: kind for mod, kind, _, _, _, _ in results}
+        for mod in undeclared_mods:
+            kind = by_mod_kind.get(mod)
+            if kind in {"optional", "conditional"} and not args.strict:
+                continue
+            effective_undeclared.append(mod)
+        if effective_undeclared:
+            errors.append("源码中 import 的依赖未在 requirements.txt 声明: " + ", ".join(sorted(set(effective_undeclared))))
 
     if errors:
         print("== 结论 ==")

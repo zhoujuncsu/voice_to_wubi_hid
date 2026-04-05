@@ -10,14 +10,14 @@ from .hardware.gpio_button import GpioButtonToggle
 from .hardware.led import NullLedController, PixelsLedController
 from .hid.emitter import RpiHidKeyEmitter, StdoutKeyEmitter
 from .orchestrator import Orchestrator
-from .stt.siliconflow import SiliconFlowStreamingSTT
+from .stt.xunfei import XunfeiWebSocketStreamingSTT
 from .translate.wubi import WubiSingleCharTranslator
 
 
 def _build_orchestrator(cfg: AppConfig) -> Orchestrator:
     emitter = RpiHidKeyEmitter(inter_key_delay_s=cfg.hid.inter_key_delay_s) if cfg.hid.enabled else StdoutKeyEmitter()
     translator = WubiSingleCharTranslator(cfg.translate.dict_path, cfg.translate.corrections_path)
-    stt = SiliconFlowStreamingSTT(cfg.stt, sample_rate=cfg.audio.sample_rate, channels=cfg.audio.output_channels)
+    stt = XunfeiWebSocketStreamingSTT(cfg.stt, sample_rate=cfg.audio.sample_rate, channels=cfg.audio.output_channels)
     led = PixelsLedController()
     if getattr(led, "_pixels", None) is None:
         led = NullLedController()

@@ -19,6 +19,10 @@ class STTConfig:
     api_key: str | None = None
     model: str | None = None
     base_url: str | None = None
+    xunfei_app_id: str | None = None
+    xunfei_api_key: str | None = None
+    xunfei_api_secret: str | None = None
+    xunfei_ws_url: str | None = None
     frame_ms: int = 20
     speech_start_frames: int = 3
     speech_end_silence_ms: int = 500
@@ -55,12 +59,24 @@ def load_app_config() -> AppConfig:
     api_key = os.getenv("V2WH_SILICONFLOW_API_KEY") or os.getenv("V2WH_STT_API_KEY") or None
     model = os.getenv("V2WH_STT_MODEL") or None
     base_url = os.getenv("V2WH_STT_BASE_URL") or None
+    xunfei_app_id = os.getenv("V2WH_XUNFEI_APPID") or os.getenv("V2WH_XUNFEI_APP_ID") or None
+    xunfei_api_key = os.getenv("V2WH_XUNFEI_APIKEY") or os.getenv("V2WH_XUNFEI_API_KEY") or None
+    xunfei_api_secret = os.getenv("V2WH_XUNFEI_APISECRET") or os.getenv("V2WH_XUNFEI_API_SECRET") or None
+    xunfei_ws_url = os.getenv("V2WH_XUNFEI_WS_URL") or None
     dict_path = os.getenv("V2WH_WUBI_DICT", "wubi.json")
     corrections_path = os.getenv("V2WH_CORRECTIONS", "corrections.json")
 
     return AppConfig(
         audio=AudioConfig(pyaudio_device_index=device_index),
-        stt=STTConfig(api_key=api_key, model=model, base_url=base_url),
+        stt=STTConfig(
+            api_key=api_key,
+            model=model,
+            base_url=base_url,
+            xunfei_app_id=xunfei_app_id,
+            xunfei_api_key=xunfei_api_key,
+            xunfei_api_secret=xunfei_api_secret,
+            xunfei_ws_url=xunfei_ws_url,
+        ),
         translate=TranslateConfig(
             dict_path=dict_path,
             corrections_path=corrections_path,
